@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[85]:
+# In[1]:
 
 
 #crcCore Function
@@ -16,7 +16,7 @@ def crcCore(intMessage,intGenerator):
     binGenerator = format(intGenerator,'b')
     #Get Length of Generator
     lenGenerator = len(binGenerator)
-    dividend = int(binMessage[0:4],2)
+    dividend = int(binMessage[0:lenGenerator],2)
     for i in range(len(binMessage)-(lenGenerator - 1)):
         #Check Most Significat Bit to choose Divisor
         if format(dividend,'b').zfill(lenGenerator)[0] == '1':
@@ -27,7 +27,7 @@ def crcCore(intMessage,intGenerator):
         if i == len(binMessage)-(lenGenerator):
             dividend = dividend ^ divisor
         else:
-            dividend = int(format(dividend ^ divisor,'b')+ binMessage[i+4],2)
+            dividend = int(format(dividend ^ divisor,'b')+ binMessage[i+lenGenerator],2)
     return dividend
     
     
@@ -35,9 +35,15 @@ def crcCore(intMessage,intGenerator):
     
 
 
-# In[86]:
+# In[2]:
 
 
 #TestCase
 print(crcCore(1256,9))
+
+
+# In[ ]:
+
+
+
 
