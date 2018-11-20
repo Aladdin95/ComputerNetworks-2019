@@ -20,3 +20,33 @@ def verify(t, g):
     if crcCore(int(t,2), int(g,2)) == 0:
         return 'message is correct'
     return 'message is not correct'
+
+
+while True:
+    cmd = input('write command like this\n generator < file.txt | alter 5 | verifier\n or press enter to exit\n')
+    if len(cmd) == 0: break
+
+    ret, file_name, index = parse(cmd)
+
+    if ret == 0:
+        print('invalid command, try again')
+        continue
+
+    with open(file_name, 'r') as handle:
+        m = handle.readline().strip()
+        g = handle.readline().strip()
+
+    trans = generate(m, g)
+
+    print(trans)
+    print()
+
+    ofn = 'transmitted_message.txt'
+    with open(ofn, 'w') as ofh:
+        ofh.write(trans)
+
+    if index is not None:
+        trans = alter(trans, index)
+
+    print(verify(trans, g))
+    print()
