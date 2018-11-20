@@ -34,7 +34,7 @@ def parse(command):
 
         return 1, file_name, index
 
-
+'''
 # test cases
 cmd1 = 'generator < file | verifier'
 cmd2 = 'generator < file | alter 5 | verifier'
@@ -42,3 +42,4 @@ cmd3 = 'generator < file | alter arg | verifier'
 print(parse(cmd1))
 print(parse(cmd2))
 print(parse(cmd3))
+'''

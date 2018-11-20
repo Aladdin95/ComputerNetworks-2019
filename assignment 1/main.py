@@ -11,9 +11,8 @@ def alter(s, i):
 
 
 def generate(m, g):
-    r = crcCore(int(m+'0'*len(g), 2), int(g, 2))
-    rstr = format(r, 'b').zfill(len(g))
-    return m+rstr
+    r = crcCore(int(m+'0'*(len(g)-1), 2), int(g, 2))
+    return m+format(r,'b').zfill(len(g)-1)
 
 
 def verify(t, g):
