@@ -39,7 +39,7 @@ def crcCore(intMessage,intGenerator):
 
 
 #TestCase
-print(crcCore(1256,9))
+#print(crcCore(1256,9))
 
 
 # In[ ]:
