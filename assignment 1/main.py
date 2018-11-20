@@ -22,7 +22,7 @@ def verify(t, g):
 
 
 while True:
-    cmd = input('write command like this\n generator < file.txt | alter 5 | verifier\n or press enter to exit\n')
+    cmd = input('write command like this\ngenerator < file.txt | alter 5 | verifier\nor press enter to exit\n')
     if len(cmd) == 0: break
 
     ret, file_name, index = parse(cmd)
