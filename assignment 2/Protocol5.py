@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[32]:
+# In[1]:
 
 
 # at first i will define packet size as the size of packet is standard 512 or 1024 but most used is 1024 and maximum sequence
@@ -9,6 +9,7 @@ PACKETSIZE = 1024
 MAX_SEQ = 7
 EVENT_TYPE = {'frame_arrival' : False,'cksum_err' : False ,'timeout' : False, 'network_layer_ready' : False}
 LIST_FRAMES = []
+FRAMES_START_TIMEOUT = []
 # here we will define frame 
 class frame:
     def __init___ (self,kind,seq,ack,info):
@@ -53,6 +54,12 @@ def to_network_layer (packet):
     writer.write(packet+'\n')
     writer.close()
     
+def start_timer (k):
+    
+    
+def stop_timer (k):
+    
+    
 '''
 #so test cases :
 s = frame
@@ -79,7 +86,11 @@ def send_data (frame_nr, frame_expected, buffer):
     s = frame()
     s.info = buffer[frame_nr]
     s.ack = (frame_expected + MAX_SEQ)%(MAX_SEQ + 1)
+    '''
     # to be complete
+    to_physical_layer(s)
+    start_timer(frame_nr)
+    '''
     
 def protocol5 ( ):
     r = frame()
@@ -90,6 +101,7 @@ def protocol5 ( ):
     nbuffered = 0
     buffer = []
     while True :
+        case_selected = False
         wait_for_event()
         
         if EVENT_TYPE['network_layer_ready']:
@@ -98,8 +110,9 @@ def protocol5 ( ):
             nbuffered = nbuffered + 1
             send_data(next_frame_to_send, frame_expected, buffer)
             inc(next_frame_to_send)
+            case_selected = True
         
-        elif EVENT_TYPE['frame_arrival']:
+        elif EVENT_TYPE['frame_arrival'] and not case_selected:
             '''
             #to be complete
             from_physical_layer(r)
@@ -114,11 +127,12 @@ def protocol5 ( ):
                 stop_timer(ack expected)
                 '''
                 inc(ack_expected)
+            case_selected = True
             
-        elif EVENT_TYPE['cksum_err']:
+        elif EVENT_TYPE['cksum_err'] and not case_selected:
+            case_selected = True
             
-            
-        elif EVENT_TYPE['timeout']:
+        elif EVENT_TYPE['timeout'] and not case_selected:
             next_frame_to_send = ack_expected
             for i in range(1,nbuffered+1,1):
                 send_data(next_frame_to_send, frame_expected, buffer)
