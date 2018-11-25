@@ -5,11 +5,13 @@
 
 
 import time
+from Physical import *
 # at first i will define packet size as the size of packet is standard 512 or 1024 but most used is 1024 and maximum sequence
-PACKETSIZE = 1024
+PACKETSIZE = 512
 MAX_SEQ = 7
 EVENT_TYPE = {'frame_arrival' : False,'cksum_err' : False ,'timeout' : False, 'network_layer_ready' : False}
-LIST_FRAMES = []
+LIST_FRAMES_SENDER = []
+LIST_FRAMES_RECEIVER = []
 FRAMES_START_TIMEOUT = []
 FRAMES_STOP_TIMEOUT = []
 # here we will define frame 
@@ -20,17 +22,23 @@ class frame:
         self.ack = ack
         self.info = info
         
-def enable_network_layer ( ):
-    global LIST_FRAMES
+def enable_network_layer (type_process):
+    global LIST_FRAMES_SENDER
+    global LIST_FRAMES_RECEIVER
     EVENT_TYPE['network_layer_ready'] = True
-    LIST_FRAMES = []
-    # it can be for sender or receiver
-    packet = open('networklayer_sender','r')
-    frames = packet.read()
-    for i in range (0,1024,8) :
-        LIST_FRAMES.append(frames[i:i+8])
-    packet.close()
-  
+    if type_process == 'server':
+        LIST_FRAMES_SENDER = []
+        packet = open('networklayer_sender','r')
+        frames = packet.read()
+        for i in range (0,512,8) :
+            LIST_FRAMES_SENDER.append(frames[i:i+8])
+        packet.close()
+    elif type_process == 'client':
+        LIST_FRAMES_RECEIVER = []
+        packet = open('networklayer_receiver','r')
+        frame = packet.readline()
+        packet.close()
+        
 def disable_network_layer ( ):
     EVENT_TYPE['network_layer_ready'] = False
     
@@ -45,16 +53,21 @@ def inc (k) :
     else :
         k = 0
         
-def from_network_layer (packet,frame_index) :
-    if frame_index is len(packet) :
-        packet.append(LIST_FRAMES.pop())
-    else :
-        packet[frame_index] = LIST_FRAMES.pop()
+def from_network_layer (packet,frame_index,type_process) :
+    if type_process == 'server':
+        if frame_index is len(packet) :
+            packet.append(LIST_FRAMES_SENDER.pop())
+        else :
+            packet[frame_index] = LIST_FRAMES_SENDER.pop()
+    elif type_process == 'client':
+        packet[frame_index] = LIST_FRAMES_RECEIVER.pop() 
         
-def to_network_layer (packet):
-    writer = open('networklayer_receiver','w')
-    writer.write(packet+'\n')
-    writer.close()
+        
+def to_network_layer (packet,type_process):
+    if type_process == 'client':
+        writer = open('networklayer_receiver','w')
+        writer.write(packet+'\n')
+        writer.close()
     
 def start_timer (k):
     if k is len(FRAMES_START_TIMEOUT) :
@@ -71,6 +84,7 @@ def stop_timer (k):
         FRAMES_STOP_TIMEOUT[k] = time.time()-FRAMES_START_TIMEOUT[k]
     
     EVENT_TYPE ['timeout'] = False
+
     
 '''
 #so test cases :
@@ -93,20 +107,18 @@ def between (a,b,c):
 print(between(3,1,4))
 print(between(6,8,4))
 '''
-def send_data (frame_nr, frame_expected, buffer):
+def send_data (frame_nr, frame_expected, buffer,type_process,process):
     global MAX_SEQ
     s = frame()
     s.info = buffer[frame_nr]
     s.ack = (frame_expected + MAX_SEQ)%(MAX_SEQ + 1)
-    '''
-    # to be complete
-    to_physical_layer(s)
-    '''
+    if type_process == 'server':
+        process.send(s.info)
     start_timer(frame_nr)
     
-def protocol5 ( ):
+def protocol5 (type_process,process):
     r = frame()
-    enable_network_layer()
+    enable_network_layer(type_process)
     ack_expected = 0
     next_frame_to_send = 0
     frame_expected = 0
@@ -118,19 +130,19 @@ def protocol5 ( ):
         
         if EVENT_TYPE['network_layer_ready']:
             # file name changes according to process name is it sender or receiver
-            from_network_layer(buffer,next_frame_to_send)
+            from_network_layer(buffer,next_frame_to_send,type_process)
             nbuffered = nbuffered + 1
-            send_data(next_frame_to_send, frame_expected, buffer)
+            send_data(next_frame_to_send, frame_expected, buffer,type_process)
             inc(next_frame_to_send)
             case_selected = True
         
         elif EVENT_TYPE['frame_arrival'] and not case_selected:
-            '''
-            #to be complete
-            from_physical_layer(r)
-            '''
+            if type_process == 'client' :
+                r.info = process.get().decode()
+                print(r.info)
+                
             if r.seq == frame_expected:
-                to_network_layer(r.info)
+                to_network_layer(r.info,type_process)
                 inc(frame_expected)
             while between(ack_expected, r.ack, next_frame_to_send) :
                 nbuffered -= 1
