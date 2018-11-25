@@ -125,10 +125,10 @@ def protocol5 ( ):
                 inc(next_frame_to_send)
                 
             
-    if nbuffered < MAX_SEQ:
-        enable_network_layer()
-    else:
-        disable_network_layer()
+        if nbuffered < MAX_SEQ:
+            enable_network_layer()
+        else:
+            disable_network_layer()
         
 
 
