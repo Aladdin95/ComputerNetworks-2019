@@ -37,6 +37,8 @@ def enable_network_layer (type_process):
         LIST_FRAMES_RECEIVER = []
         packet = open('networklayer_receiver.txt','r')
         frame = packet.readline()
+        if frame == '':
+            disable_network_layer ( )
         packet.close()
         
 def disable_network_layer ( ):
@@ -114,6 +116,7 @@ def send_data (frame_nr, frame_expected, buffer,type_process,process):
     s.ack = (frame_expected + MAX_SEQ)%(MAX_SEQ + 1)
     if type_process == 'server':
         process.send(s.info)
+        time.sleep(10)
     start_timer(frame_nr)
     
 def protocol5 (type_process,process):
