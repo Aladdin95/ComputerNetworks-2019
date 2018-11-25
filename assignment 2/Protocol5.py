@@ -28,14 +28,14 @@ def enable_network_layer (type_process):
     EVENT_TYPE['network_layer_ready'] = True
     if type_process == 'server':
         LIST_FRAMES_SENDER = []
-        packet = open('networklayer_sender','r')
+        packet = open('networklayer_sender.txt','r')
         frames = packet.read()
         for i in range (0,512,8) :
             LIST_FRAMES_SENDER.append(frames[i:i+8])
         packet.close()
     elif type_process == 'client':
         LIST_FRAMES_RECEIVER = []
-        packet = open('networklayer_receiver','r')
+        packet = open('networklayer_receiver.txt','r')
         frame = packet.readline()
         packet.close()
         
@@ -65,7 +65,7 @@ def from_network_layer (packet,frame_index,type_process) :
         
 def to_network_layer (packet,type_process):
     if type_process == 'client':
-        writer = open('networklayer_receiver','w')
+        writer = open('networklayer_receiver.txt','w')
         writer.write(packet+'\n')
         writer.close()
     
@@ -132,7 +132,7 @@ def protocol5 (type_process,process):
             # file name changes according to process name is it sender or receiver
             from_network_layer(buffer,next_frame_to_send,type_process)
             nbuffered = nbuffered + 1
-            send_data(next_frame_to_send, frame_expected, buffer,type_process)
+            send_data(next_frame_to_send, frame_expected, buffer,type_process,process)
             inc(next_frame_to_send)
             case_selected = True
         
@@ -156,12 +156,12 @@ def protocol5 (type_process,process):
         elif EVENT_TYPE['timeout'] and not case_selected:
             next_frame_to_send = ack_expected
             for i in range(1,nbuffered+1,1):
-                send_data(next_frame_to_send, frame_expected, buffer)
+                send_data(next_frame_to_send, frame_expected, buffer,type_process,process)
                 inc(next_frame_to_send)
                 
             
         if nbuffered < MAX_SEQ:
-            enable_network_layer()
+            enable_network_layer(type_process)
         else:
             disable_network_layer()
         
