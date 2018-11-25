@@ -1,15 +1,17 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[6]:
 
 
+import time
 # at first i will define packet size as the size of packet is standard 512 or 1024 but most used is 1024 and maximum sequence
 PACKETSIZE = 1024
 MAX_SEQ = 7
 EVENT_TYPE = {'frame_arrival' : False,'cksum_err' : False ,'timeout' : False, 'network_layer_ready' : False}
 LIST_FRAMES = []
 FRAMES_START_TIMEOUT = []
+FRAMES_STOP_TIMEOUT = []
 # here we will define frame 
 class frame:
     def __init___ (self,kind,seq,ack,info):
@@ -55,10 +57,20 @@ def to_network_layer (packet):
     writer.close()
     
 def start_timer (k):
+    if k is len(FRAMES_START_TIMEOUT) :
+        FRAMES_START_TIMEOUT.append(time.time())
+    else :
+        FRAMES_START_TIMEOUT[k] = time.time()
     
+    EVENT_TYPE ['timeout'] = True
     
 def stop_timer (k):
+    if k is len(FRAMES_STOP_TIMEOUT) :
+        FRAMES_STOP_TIMEOUT.append(time.time()-FRAMES_START_TIMEOUT[k])
+    else :
+        FRAMES_STOP_TIMEOUT[k] = time.time()-FRAMES_START_TIMEOUT[k]
     
+    EVENT_TYPE ['timeout'] = False
     
 '''
 #so test cases :
@@ -89,8 +101,8 @@ def send_data (frame_nr, frame_expected, buffer):
     '''
     # to be complete
     to_physical_layer(s)
-    start_timer(frame_nr)
     '''
+    start_timer(frame_nr)
     
 def protocol5 ( ):
     r = frame()
@@ -121,11 +133,8 @@ def protocol5 ( ):
                 to_network_layer(r.info)
                 inc(frame_expected)
             while between(ack_expected, r.ack, next_frame_to_send) :
-                nbuffered = nbuffered − 1
-                '''
-                #to be completed
-                stop_timer(ack expected)
-                '''
+                nbuffered -= 1
+                stop_timer(ack_expected)
                 inc(ack_expected)
             case_selected = True
             
@@ -144,10 +153,4 @@ def protocol5 ( ):
         else:
             disable_network_layer()
         
-
-
-# In[ ]:
-
-
-
 
